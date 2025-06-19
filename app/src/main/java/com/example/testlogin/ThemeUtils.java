@@ -5,23 +5,48 @@ import android.content.SharedPreferences;
 import androidx.appcompat.app.AppCompatDelegate;
 
 public final class ThemeUtils {
-    private static final String PREFS  = "app_settings";
-    private static final String KEY_DARK = "dark_mode";
+    private static final String PREFERENCES_NAME = "theme_preferences";
+    private static final String DARK_MODE_KEY = "is_dark_mode_enabled";
 
-    private ThemeUtils() {}          // clase solo estática
+    // Constructor privado para prevenir instanciación
+    private ThemeUtils() {}
 
-    public static void applyThemeFromPrefs(Context ctx) {
-        SharedPreferences p = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        boolean dark = p.getBoolean(KEY_DARK, false);
-        AppCompatDelegate.setDefaultNightMode(
-                dark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+    /**
+     * Aplica el tema guardado en las preferencias
+     * @param context Contexto de la aplicación
+     */
+    public static void applyThemeFromPreferences(Context context) {
+        boolean isDarkMode = getDarkModePreference(context);
+        setAppThemeMode(isDarkMode);
     }
 
-    /** Cambia el modo y persiste la preferencia */
-    public static void toggleTheme(Context ctx, boolean dark) {
-        SharedPreferences p = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        p.edit().putBoolean(KEY_DARK, dark).apply();
-        AppCompatDelegate.setDefaultNightMode(
-                dark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+    /**
+     * Cambia entre modo claro/oscuro y guarda la preferencia
+     * @param context Contexto de la aplicación
+     * @param enableDarkMode True para activar modo oscuro, false para modo claro
+     */
+    public static void toggleTheme(Context context, boolean enableDarkMode) {
+        saveDarkModePreference(context, enableDarkMode);
+        setAppThemeMode(enableDarkMode);
+    }
+
+    private static void setAppThemeMode(boolean isDarkMode) {
+        int mode = isDarkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
+        AppCompatDelegate.setDefaultNightMode(mode);
+    }
+
+    private static boolean getDarkModePreference(Context context) {
+        SharedPreferences prefs = getPreferences(context);
+        return prefs.getBoolean(DARK_MODE_KEY, false);
+    }
+
+    private static void saveDarkModePreference(Context context, boolean value) {
+        SharedPreferences.Editor editor = getPreferences(context).edit();
+        editor.putBoolean(DARK_MODE_KEY, value);
+        editor.apply();
+    }
+
+    private static SharedPreferences getPreferences(Context context) {
+        return context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
     }
 }
