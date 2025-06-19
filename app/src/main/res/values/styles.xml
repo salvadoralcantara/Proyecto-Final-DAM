@@ -1,0 +1,23 @@
+<!-- En res/values/styles.xml -->
+<resources>
+    <!-- Base application theme -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primaryColor</item>
+        <item name="colorPrimaryVariant">@color/primaryDarkColor</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/accentColor</item>
+        <item name="colorSecondaryVariant">@color/accentColor</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <!-- Agregamos estos items para el tema claro -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:background">@color/light_background</item>
+    </style>
+
+    <!-- Tema oscuro (se hereda del tema base) -->
+    <style name="AppTheme.Dark" parent="AppTheme">
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:background">@color/dark_background</item>
+    </style>
+</resources>
