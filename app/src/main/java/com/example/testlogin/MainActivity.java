@@ -25,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
+
+
         // === 2. referencia al switch ===
         SwitchCompat sw = findViewById(R.id.switch_dark);
 
@@ -43,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Inicializar SharedPreferences
-        SharedPreferences ThemePrefs = getSharedPreferences("UsuariosPrefs", MODE_PRIVATE);
+        SharedPreferences creds = getSharedPreferences("UsuariosPrefs", MODE_PRIVATE);
 
         // Obtener vistas
         EditText inputUsuario = findViewById(R.id.editTextUsuario);
@@ -61,8 +63,8 @@ public class MainActivity extends AppCompatActivity {
             String userInput = inputUsuario.getText().toString().trim();
             String passInput = inputPassword.getText().toString().trim();
 
-            String usuarioGuardado = prefs.getString("usuario", null);
-            String passwordGuardado = prefs.getString("password", null);
+            String usuarioGuardado  = creds.getString("usuario",  null);
+            String passwordGuardado = creds.getString("password", null);
 
             if (userInput.equals(usuarioGuardado) && passInput.equals(passwordGuardado)) {
                 Toast.makeText(this, "Ingreso exitoso", Toast.LENGTH_SHORT).show();
