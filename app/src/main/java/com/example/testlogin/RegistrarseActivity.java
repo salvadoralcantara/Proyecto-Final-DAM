@@ -1,41 +1,30 @@
 package com.example.testlogin;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
-
-import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import android.content.SharedPreferences;
 import android.widget.EditText;
 import android.widget.Toast;
-
+import androidx.appcompat.app.AppCompatActivity;
 
 public class RegistrarseActivity extends AppCompatActivity {
 
+    private SharedPreferences prefs;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeUtils.applyThemeFromPreferences(this); // aplicar tema antes de super
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_registrarse);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-        Button botonVolver = findViewById(R.id.buttonVolver);
-        botonVolver.setOnClickListener(v -> {
-            finish();
-        });
+
+        prefs = getSharedPreferences("UsuariosPrefs", MODE_PRIVATE);
 
         EditText inputUsuario = findViewById(R.id.editTextText);
         EditText inputEmail = findViewById(R.id.editTextText2);
         EditText inputPassword = findViewById(R.id.editTextText4);
         EditText inputConfirmar = findViewById(R.id.editTextText5);
-
         Button botonGuardar = findViewById(R.id.button4);
+        Button botonVolver = findViewById(R.id.buttonVolver);
 
         botonGuardar.setOnClickListener(v -> {
             String usuario = inputUsuario.getText().toString().trim();
@@ -43,44 +32,45 @@ public class RegistrarseActivity extends AppCompatActivity {
             String password = inputPassword.getText().toString().trim();
             String confirmar = inputConfirmar.getText().toString().trim();
 
+            if (usuario.isEmpty() || email.isEmpty() || password.isEmpty() || confirmar.isEmpty()) {
+                Toast.makeText(this, "Complete todos los campos", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             if (usuario.length() < 3) {
                 Toast.makeText(this, "Usuario debe tener al menos 3 caracteres", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
-                Toast.makeText(this, "Email no valido", Toast.LENGTH_SHORT).show();
+            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Toast.makeText(this, "Email no válido", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            if (password.length() < 5 || !password.matches(".*[A-Za-z].*") || !password.matches(".*\\d.*")) {
-                Toast.makeText(this, "Password debe tener minimo 5 caracteres y ser alfanumerico", Toast.LENGTH_SHORT).show();
+            if (password.length() < 5) {
+                Toast.makeText(this, "La contraseña debe tener al menos 5 caracteres", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             if (!password.equals(confirmar)) {
-                Toast.makeText(this, "Las contrasenas no coinciden", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Guarda los registros en SharedPreferences
-            SharedPreferences prefs = getSharedPreferences("UsuariosPrefs", MODE_PRIVATE);
+            if (prefs.contains("user_" + usuario)) {
+                Toast.makeText(this, "Usuario ya registrado", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             SharedPreferences.Editor editor = prefs.edit();
-            editor.putString("usuario", usuario);
-            editor.putString("email", email);
-            editor.putString("password", password);
+            editor.putString("user_" + usuario, password);
+            editor.putString("email_" + usuario, email);
             editor.apply();
 
-            Toast.makeText(this, "Usuario registrado correctamente", Toast.LENGTH_LONG).show();
-
-            // Limpia los campos
-            inputUsuario.setText("");
-            inputEmail.setText("");
-            inputPassword.setText("");
-            inputConfirmar.setText("");
+            Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show();
+            finish();
         });
 
-
-
+        botonVolver.setOnClickListener(v -> finish());
     }
 }
