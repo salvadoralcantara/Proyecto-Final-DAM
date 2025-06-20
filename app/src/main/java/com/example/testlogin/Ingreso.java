@@ -22,27 +22,26 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.testlogin.data.BlogRepository;
 import com.example.testlogin.data.BlogRepository.Blog;
-import com.example.testlogin.ThemeUtils;
 import java.util.List;
 
 public class Ingreso extends AppCompatActivity {
 
     private static final int REQUEST_PERMISSION_CODE = 101;
 
-    EditText etTitle, etStory;
-    ImageView imgPreview;
-    Button btnSelectImage, btnSave, btnCancelar;
-    Button btnModoOscuro, btnCerrarSesion, btnNuevoPost;
-    ScrollView formularioLayout;
-    RecyclerView rvBlogs;
+    private EditText etTitle, etStory;
+    private ImageView imgPreview;
+    private Button btnSelectImage, btnSave, btnCancelar;
+    private Button btnModoOscuro, btnCerrarSesion, btnNuevoPost;
+    private ScrollView formularioLayout;
+    private RecyclerView rvBlogs;
 
-    Uri selectedImageUri = null;
+    private Uri selectedImageUri = null;
 
-    BlogRepository repository;
-    List<Blog> blogList;
-    RecyclerView.Adapter blogAdapter;
+    private BlogRepository repository;
+    private List<Blog> blogList;
+    private RecyclerView.Adapter blogAdapter;
 
-    ActivityResultLauncher<Intent> pickImageLauncher;
+    private ActivityResultLauncher<Intent> pickImageLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +50,13 @@ public class Ingreso extends AppCompatActivity {
         setContentView(R.layout.activity_ingreso);
 
         repository = new BlogRepository(this);
+        setupUI();
+        setupRecyclerView();
+        setupImagePicker();
+        setupListeners();
+    }
 
+    private void setupUI() {
         etTitle = findViewById(R.id.etTitle);
         etStory = findViewById(R.id.etStory);
         imgPreview = findViewById(R.id.imgPreview);
@@ -63,9 +68,10 @@ public class Ingreso extends AppCompatActivity {
         btnNuevoPost = findViewById(R.id.btnNuevoPost);
         formularioLayout = findViewById(R.id.formularioLayout);
         rvBlogs = findViewById(R.id.rvBlogs);
+    }
 
+    private void setupRecyclerView() {
         rvBlogs.setLayoutManager(new LinearLayoutManager(this));
-
         blogList = repository.getAll();
 
         blogAdapter = new RecyclerView.Adapter<BlogViewHolder>() {
@@ -94,7 +100,9 @@ public class Ingreso extends AppCompatActivity {
         };
 
         rvBlogs.setAdapter(blogAdapter);
+    }
 
+    private void setupImagePicker() {
         pickImageLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -103,8 +111,11 @@ public class Ingreso extends AppCompatActivity {
                         imgPreview.setImageURI(selectedImageUri);
                         Toast.makeText(this, "Imagen seleccionada", Toast.LENGTH_SHORT).show();
                     }
-                });
+                }
+        );
+    }
 
+    private void setupListeners() {
         btnNuevoPost.setOnClickListener(v -> {
             formularioLayout.setVisibility(View.VISIBLE);
             btnNuevoPost.setVisibility(View.GONE);
@@ -152,10 +163,7 @@ public class Ingreso extends AppCompatActivity {
 
             Blog blog = new Blog(titulo, historia, selectedImageUri != null ? selectedImageUri.toString() : null);
             repository.insert(blog);
-
-            blogList.clear();
-            blogList.addAll(repository.getAll());
-            blogAdapter.notifyDataSetChanged();
+            actualizarLista();
 
             etTitle.setText("");
             etStory.setText("");
@@ -171,7 +179,8 @@ public class Ingreso extends AppCompatActivity {
         });
 
         btnModoOscuro.setOnClickListener(v -> {
-            boolean isDark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+            boolean isDark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                    == Configuration.UI_MODE_NIGHT_YES;
             ThemeUtils.toggleTheme(Ingreso.this, !isDark);
             recreate();
         });
@@ -184,6 +193,12 @@ public class Ingreso extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+    }
+
+    private void actualizarLista() {
+        blogList.clear();
+        blogList.addAll(repository.getAll());
+        blogAdapter.notifyDataSetChanged();
     }
 
     private void abrirSelectorImagen() {
