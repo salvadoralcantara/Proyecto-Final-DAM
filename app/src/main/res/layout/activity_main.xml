@@ -12,7 +12,7 @@
         android:id="@+id/logoText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="BlogUES"
+        android:text="Servicios Comunitarios"
         android:textSize="32sp"
         android:textStyle="bold"
         android:textColor="?attr/textColor"
