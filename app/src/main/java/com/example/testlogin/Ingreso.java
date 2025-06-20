@@ -203,3 +203,5 @@ public class Ingreso extends AppCompatActivity {
         }
     }
 }
+
+// Cambios de creación de posts
