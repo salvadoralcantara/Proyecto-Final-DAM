@@ -7,20 +7,22 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class BlogDbHelper extends SQLiteOpenHelper {
 
     public static final String DB_NAME = "blogs.db";
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 2;
 
     public static final String TABLE = "blogs";
     public static final String C_ID = "_id";
     public static final String C_TITLE = "title";
     public static final String C_STORY = "story";
     public static final String C_IMAGE_URI = "image_uri";
+    public static final String C_AUTOR = "autor";
 
     private static final String CREATE =
             "CREATE TABLE " + TABLE + " (" +
                     C_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     C_TITLE + " TEXT NOT NULL, " +
                     C_STORY + " TEXT NOT NULL, " +
-                    C_IMAGE_URI + " TEXT);";
+                    C_IMAGE_URI + " TEXT, " +
+                    C_AUTOR + " TEXT NOT NULL);";
 
     public BlogDbHelper(Context ctx) {
         super(ctx, DB_NAME, null, DB_VERSION);
@@ -32,5 +34,8 @@ public class BlogDbHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) { }
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE);
+        onCreate(db);
+    }
 }
