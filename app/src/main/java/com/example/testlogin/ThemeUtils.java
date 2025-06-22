@@ -8,28 +8,23 @@ public final class ThemeUtils {
     private static final String PREFERENCES_NAME = "theme_preferences";
     private static final String DARK_MODE_KEY = "is_dark_mode_enabled";
 
-    // Constructor privado para prevenir instanciación
+
     private ThemeUtils() {}
 
-    /**
-     * Aplica el tema guardado en las preferencias
-     */
     public static void applyThemeFromPreferences(Context context) {
         boolean isDarkMode = getDarkModePreference(context);
         setAppThemeMode(isDarkMode);
     }
 
-    /**
-     * Cambia entre modo claro/oscuro y guarda la preferencia
-     */
+    // Cambia entre modo claro/oscuro y guarda la preferencia
+
     public static void toggleTheme(Context context, boolean enableDarkMode) {
         saveDarkModePreference(context, enableDarkMode);
         setAppThemeMode(enableDarkMode);
     }
 
-    /**
-     * Devuelve si el modo oscuro está activado o no
-     */
+
+     // Devuelve si el modo oscuro está activado o no
     public static boolean isDarkModeEnabled(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         return prefs.getBoolean(DARK_MODE_KEY, false);

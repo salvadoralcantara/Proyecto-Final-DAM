@@ -13,7 +13,7 @@ public class RegistrarseActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ThemeUtils.applyThemeFromPreferences(this); // aplicar tema antes de super
+        ThemeUtils.applyThemeFromPreferences(this); // aplica tema antes de super
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registrarse);
 
