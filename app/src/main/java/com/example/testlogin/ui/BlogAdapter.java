@@ -1,8 +1,12 @@
 package com.example.testlogin.ui;
 
+import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -11,37 +15,85 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.testlogin.R;
 import com.example.testlogin.model.Blog;
 
+import java.io.File;
 import java.util.List;
 
-public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.VH> {
+public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder> {
 
-    private List<Blog> data;
-
-    public void setData(List<Blog> list) {
-        data = list;
-        notifyDataSetChanged();
+    public interface OnItemClickListener {
+        void onEditar(Blog blog);
+        void onEliminar(Blog blog);
     }
 
-    @NonNull @Override
-    public VH onCreateViewHolder(@NonNull ViewGroup p,int v){
-        View view= LayoutInflater.from(p.getContext())
-                .inflate(R.layout.blog_item,p,false);
-        return new VH(view);
+    private final List<Blog> lista;
+    private final String usuarioActual;
+    private final OnItemClickListener listener;
+
+    public BlogAdapter(List<Blog> lista, String usuarioActual, OnItemClickListener listener) {
+        this.lista = lista;
+        this.usuarioActual = usuarioActual;
+        this.listener = listener;
     }
 
-    @Override public void onBindViewHolder(@NonNull VH h,int pos){
-        Blog b=data.get(pos);
-        h.title.setText(b.title);
-        h.story.setText(b.story);
+    @NonNull
+    @Override
+    public BlogViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.blog_item, parent, false);
+        return new BlogViewHolder(v);
     }
-    @Override public int getItemCount(){ return data==null?0:data.size(); }
 
-    static class VH extends RecyclerView.ViewHolder{
-        TextView title,story;
-        VH(@NonNull View v){
-            super(v);
-            title=v.findViewById(R.id.tvItemTitle);
-            story=v.findViewById(R.id.tvItemStory);
+    @Override
+    public void onBindViewHolder(@NonNull BlogViewHolder h, int position) {
+        Blog b = lista.get(position);
+        h.tvTitle.setText(b.titulo);
+        h.tvStory.setText(b.historia);
+
+        // Manejo seguro de URI de imagen
+        if (b.imagenUri != null) {
+            try {
+                Uri uri = Uri.parse(b.imagenUri);
+                File file = new File(uri.getPath());
+                if (file.exists()) {
+                    h.img.setImageURI(uri);
+                } else {
+                    h.img.setImageResource(R.drawable.ic_launcher_background);
+                }
+            } catch (Exception e) {
+                h.img.setImageResource(R.drawable.ic_launcher_background);
+            }
+        } else {
+            h.img.setImageResource(R.drawable.ic_launcher_background);
+        }
+
+        if (b.usuario != null && b.usuario.equals(usuarioActual)) {
+            h.btnEditar.setVisibility(View.VISIBLE);
+            h.btnEliminar.setVisibility(View.VISIBLE);
+        } else {
+            h.btnEditar.setVisibility(View.GONE);
+            h.btnEliminar.setVisibility(View.GONE);
+        }
+
+        h.btnEditar.setOnClickListener(v -> listener.onEditar(b));
+        h.btnEliminar.setOnClickListener(v -> listener.onEliminar(b));
+    }
+
+    @Override
+    public int getItemCount() {
+        return lista.size();
+    }
+
+    static class BlogViewHolder extends RecyclerView.ViewHolder {
+        TextView tvTitle, tvStory;
+        ImageView img;
+        Button btnEditar, btnEliminar;
+
+        BlogViewHolder(View itemView) {
+            super(itemView);
+            tvTitle = itemView.findViewById(R.id.tvItemTitle);
+            tvStory = itemView.findViewById(R.id.tvItemStory);
+            img = itemView.findViewById(R.id.imgItem);
+            btnEditar = itemView.findViewById(R.id.btnEditar);
+            btnEliminar = itemView.findViewById(R.id.btnEliminar);
         }
     }
 }

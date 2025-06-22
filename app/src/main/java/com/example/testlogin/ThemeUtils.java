@@ -13,7 +13,6 @@ public final class ThemeUtils {
 
     /**
      * Aplica el tema guardado en las preferencias
-     * @param context Contexto de la aplicación
      */
     public static void applyThemeFromPreferences(Context context) {
         boolean isDarkMode = getDarkModePreference(context);
@@ -22,31 +21,36 @@ public final class ThemeUtils {
 
     /**
      * Cambia entre modo claro/oscuro y guarda la preferencia
-     * @param context Contexto de la aplicación
-     * @param enableDarkMode True para activar modo oscuro, false para modo claro
      */
     public static void toggleTheme(Context context, boolean enableDarkMode) {
         saveDarkModePreference(context, enableDarkMode);
         setAppThemeMode(enableDarkMode);
     }
 
+    /**
+     * Devuelve si el modo oscuro está activado o no
+     */
+    public static boolean isDarkModeEnabled(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        return prefs.getBoolean(DARK_MODE_KEY, false);
+    }
+
+    // Establece el modo de tema de la aplicación
     private static void setAppThemeMode(boolean isDarkMode) {
         int mode = isDarkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
         AppCompatDelegate.setDefaultNightMode(mode);
     }
 
-    private static boolean getDarkModePreference(Context context) {
-        SharedPreferences prefs = getPreferences(context);
-        return prefs.getBoolean(DARK_MODE_KEY, false);
-    }
-
+    // Guarda la preferencia del modo oscuro
     private static void saveDarkModePreference(Context context, boolean value) {
-        SharedPreferences.Editor editor = getPreferences(context).edit();
+        SharedPreferences.Editor editor = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE).edit();
         editor.putBoolean(DARK_MODE_KEY, value);
         editor.apply();
     }
 
-    private static SharedPreferences getPreferences(Context context) {
-        return context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+    // Obtiene la preferencia actual del modo oscuro
+    static boolean getDarkModePreference(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        return prefs.getBoolean(DARK_MODE_KEY, false);
     }
 }

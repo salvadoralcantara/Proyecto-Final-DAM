@@ -1,14 +1,23 @@
 package com.example.testlogin.model;
 
 public class Blog {
-    public long id;          // autoincrement
-    public String title;
-    public String story;
+    public long id;
+    public String titulo;
+    public String historia;
+    public String imagenUri;
+    public String usuario;  // nuevo campo para saber quién lo creó
 
-    public Blog(long id, String title, String story) {
+    // Constructor con ID (usado en lecturas desde la DB)
+    public Blog(long id, String titulo, String historia, String imagenUri, String usuario) {
         this.id = id;
-        this.title = title;
-        this.story = story;
+        this.titulo = titulo;
+        this.historia = historia;
+        this.imagenUri = imagenUri;
+        this.usuario = usuario;
     }
-    public Blog(String title, String story) { this(-1, title, story); }
+
+    // Constructor sin ID (usado antes de insertar en la DB)
+    public Blog(String titulo, String historia, String imagenUri, String usuario) {
+        this(-1, titulo, historia, imagenUri, usuario);
+    }
 }
