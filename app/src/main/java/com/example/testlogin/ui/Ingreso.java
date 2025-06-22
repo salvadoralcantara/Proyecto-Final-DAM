@@ -1,20 +1,20 @@
-package com.example.testlogin;
+package com.example.testlogin.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.View;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.testlogin.R;
 import com.example.testlogin.data.BlogRepository;
 import com.example.testlogin.model.Blog;
-import com.example.testlogin.ui.BlogAdapter;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -189,5 +189,68 @@ public class Ingreso extends AppCompatActivity {
         formulario.setVisibility(View.GONE);
         rv.setVisibility(View.VISIBLE);
         blogEditando = null;
+    }
+
+    public static class MainActivity extends AppCompatActivity {
+
+        private SharedPreferences prefs;
+
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            ThemeUtils.applyThemeFromPreferences(this); // Aplica tema antes de super
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main);
+
+            prefs = getSharedPreferences("UsuariosPrefs", MODE_PRIVATE);
+
+            EditText inputUsuario = findViewById(R.id.editTextUsuario);
+            EditText inputPassword = findViewById(R.id.editTextPassword);
+            Button botonIniciar = findViewById(R.id.button);
+            Button botonRegistrarse = findViewById(R.id.button2);
+            Button botonSalir = findViewById(R.id.button3);
+            SwitchCompat sw = findViewById(R.id.switch_dark);
+
+            SharedPreferences themePrefs = getSharedPreferences("theme_preferences", MODE_PRIVATE);
+            sw.setChecked(themePrefs.getBoolean("is_dark_mode_enabled", false));
+            sw.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                ThemeUtils.toggleTheme(MainActivity.this, isChecked);
+                recreate();
+            });
+
+            botonRegistrarse.setOnClickListener(v -> {
+                startActivity(new Intent(MainActivity.this, RegistrarseActivity.class));
+            });
+
+            botonIniciar.setOnClickListener(v -> {
+                String userInput = inputUsuario.getText().toString().trim();
+                String passInput = inputPassword.getText().toString().trim();
+
+                if (userInput.isEmpty() || passInput.isEmpty()) {
+                    Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                String savedPassword = prefs.getString("user_" + userInput, null);
+
+                if (savedPassword != null && savedPassword.equals(passInput)) {
+                    prefs.edit().putString("usuario_logueado", userInput).apply();
+                    Toast.makeText(this, "Ingreso exitoso", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(MainActivity.this, Ingreso.class));
+                    finish();
+                } else {
+                    Toast.makeText(this, "Credenciales incorrectas", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            botonSalir.setOnClickListener(v -> finishAffinity());
+        }
+
+        @Override
+        protected void onResume() {
+            super.onResume();
+            SwitchCompat sw = findViewById(R.id.switch_dark);
+            SharedPreferences themePrefs = getSharedPreferences("theme_preferences", MODE_PRIVATE);
+            sw.setChecked(themePrefs.getBoolean("is_dark_mode_enabled", false));
+        }
     }
 }
