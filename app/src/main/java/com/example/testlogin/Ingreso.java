@@ -2,23 +2,22 @@ package com.example.testlogin;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.ScrollView;
-import android.widget.Toast;
-
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.testlogin.data.BlogRepository;
 import com.example.testlogin.model.Blog;
 import com.example.testlogin.ui.BlogAdapter;
-
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.List;
 
 public class Ingreso extends AppCompatActivity {
@@ -40,18 +39,15 @@ public class Ingreso extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ingreso);
 
-        // Obtener el usuario logueado
         SharedPreferences prefs = getSharedPreferences("UsuariosPrefs", MODE_PRIVATE);
         usuarioActual = prefs.getString("usuario_logueado", null);
 
         if (usuarioActual == null) {
-            Toast.makeText(this, "Sesión no iniciada", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, MainActivity.class));
             finish();
             return;
         }
 
-        // Inicialización
         repo = new BlogRepository(this);
         rv = findViewById(R.id.rvBlogs);
         formulario = findViewById(R.id.formularioLayout);
@@ -62,11 +58,9 @@ public class Ingreso extends AppCompatActivity {
         rv.setLayoutManager(new LinearLayoutManager(this));
         cargarLista();
 
-        // Botones
         findViewById(R.id.btnNuevoPost).setOnClickListener(v -> mostrarFormulario(null));
         findViewById(R.id.btnCancelar).setOnClickListener(v -> ocultarFormulario());
         findViewById(R.id.btnCerrarSesion).setOnClickListener(v -> cerrarSesion());
-
         findViewById(R.id.btnModoOscuro).setOnClickListener(v -> {
             boolean dark = !ThemeUtils.getDarkModePreference(this);
             ThemeUtils.toggleTheme(this, dark);
@@ -108,14 +102,19 @@ public class Ingreso extends AppCompatActivity {
             return;
         }
 
+        String savedImagePath = null;
+        if (imagenUri != null) {
+            savedImagePath = guardarImagenLocal(imagenUri);
+        }
+
         if (blogEditando == null) {
-            Blog b = new Blog(titulo, descripcion, imagenUri != null ? imagenUri.toString() : null, usuarioActual);
+            Blog b = new Blog(titulo, descripcion, savedImagePath, usuarioActual);
             repo.insert(b);
             Toast.makeText(this, "Post creado", Toast.LENGTH_SHORT).show();
         } else {
             blogEditando.titulo = titulo;
             blogEditando.historia = descripcion;
-            blogEditando.imagenUri = (imagenUri != null) ? imagenUri.toString() : null;
+            blogEditando.imagenUri = savedImagePath;
             repo.update(blogEditando);
             Toast.makeText(this, "Post actualizado", Toast.LENGTH_SHORT).show();
             blogEditando = null;
@@ -123,6 +122,25 @@ public class Ingreso extends AppCompatActivity {
 
         ocultarFormulario();
         cargarLista();
+    }
+
+    private String guardarImagenLocal(Uri uri) {
+        try {
+            InputStream input = getContentResolver().openInputStream(uri);
+            File imgFile = new File(getFilesDir(), "img_" + System.currentTimeMillis() + ".jpg");
+            FileOutputStream output = new FileOutputStream(imgFile);
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = input.read(buffer)) > 0) {
+                output.write(buffer, 0, len);
+            }
+            input.close();
+            output.close();
+            return imgFile.getAbsolutePath();
+        } catch (Exception e) {
+            Toast.makeText(this, "Error al guardar imagen", Toast.LENGTH_SHORT).show();
+            return null;
+        }
     }
 
     private void cargarLista() {
@@ -150,8 +168,13 @@ public class Ingreso extends AppCompatActivity {
             etTitulo.setText(b.titulo);
             etDescripcion.setText(b.historia);
             if (b.imagenUri != null) {
-                imagenUri = Uri.parse(b.imagenUri);
-                imgPreview.setImageURI(imagenUri);
+                File imgFile = new File(b.imagenUri);
+                if (imgFile.exists()) {
+                    imgPreview.setImageURI(Uri.fromFile(imgFile));
+                } else {
+                    imgPreview.setImageResource(R.drawable.ic_launcher_background);
+                }
+                imagenUri = Uri.fromFile(imgFile);
             }
         } else {
             blogEditando = null;

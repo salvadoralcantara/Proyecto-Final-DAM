@@ -1,5 +1,6 @@
 package com.example.testlogin.ui;
 
+import android.content.Context;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,9 +11,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.testlogin.R;
 import com.example.testlogin.model.Blog;
 
+import java.io.File;
 import java.util.List;
 
 public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder> {
@@ -45,8 +48,19 @@ public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder
         h.tvTitle.setText(b.titulo);
         h.tvStory.setText(b.historia);
 
+        // Manejo seguro de URI de imagen
         if (b.imagenUri != null) {
-            h.img.setImageURI(Uri.parse(b.imagenUri));
+            try {
+                Uri uri = Uri.parse(b.imagenUri);
+                File file = new File(uri.getPath());
+                if (file.exists()) {
+                    h.img.setImageURI(uri);
+                } else {
+                    h.img.setImageResource(R.drawable.ic_launcher_background);
+                }
+            } catch (Exception e) {
+                h.img.setImageResource(R.drawable.ic_launcher_background);
+            }
         } else {
             h.img.setImageResource(R.drawable.ic_launcher_background);
         }
