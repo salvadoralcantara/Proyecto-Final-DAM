@@ -197,7 +197,7 @@ public class Ingreso extends AppCompatActivity {
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
-            ThemeUtils.applyThemeFromPreferences(this); // Aplica tema antes de super
+            ThemeUtils.applyThemeFromPreferences(this);
             super.onCreate(savedInstanceState);
             setContentView(R.layout.activity_main);
 

@@ -2,6 +2,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <string name="app_name">LOGIN</string>
+    <string name="app_name">Servicios Comunitarios</string>
 
 </resources>
