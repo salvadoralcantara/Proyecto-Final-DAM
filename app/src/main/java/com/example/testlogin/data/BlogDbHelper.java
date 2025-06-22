@@ -7,14 +7,14 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class BlogDbHelper extends SQLiteOpenHelper {
 
     public static final String DB_NAME = "blogs.db";
-    private static final int DB_VERSION = 2;
+    private static final int DB_VERSION = 2; // Cambia versión si ya existe
 
     public static final String TABLE = "blogs";
     public static final String C_ID = "_id";
     public static final String C_TITLE = "title";
     public static final String C_STORY = "story";
     public static final String C_IMAGE_URI = "image_uri";
-    public static final String C_AUTOR = "autor";
+    public static final String C_USER = "usuario"; // Nuevo campo
 
     private static final String CREATE =
             "CREATE TABLE " + TABLE + " (" +
@@ -22,7 +22,7 @@ public class BlogDbHelper extends SQLiteOpenHelper {
                     C_TITLE + " TEXT NOT NULL, " +
                     C_STORY + " TEXT NOT NULL, " +
                     C_IMAGE_URI + " TEXT, " +
-                    C_AUTOR + " TEXT NOT NULL);";
+                    C_USER + " TEXT);";
 
     public BlogDbHelper(Context ctx) {
         super(ctx, DB_NAME, null, DB_VERSION);

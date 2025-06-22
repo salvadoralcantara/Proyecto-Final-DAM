@@ -5,7 +5,7 @@ public class Blog {
     public String titulo;
     public String historia;
     public String imagenUri;
-    public String usuario;
+    public String usuario; // Campo para guardar autor
 
     public Blog(long id, String titulo, String historia, String imagenUri, String usuario) {
         this.id = id;

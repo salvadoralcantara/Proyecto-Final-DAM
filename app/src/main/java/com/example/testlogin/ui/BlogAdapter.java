@@ -1,15 +1,15 @@
 package com.example.testlogin.ui;
 
-import android.content.Context;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.testlogin.R;
 import com.example.testlogin.model.Blog;
 
@@ -17,17 +17,17 @@ import java.util.List;
 
 public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder> {
 
-    public interface OnBlogActionListener {
-        void onEdit(Blog blog);
-        void onDelete(Blog blog);
+    public interface OnItemClickListener {
+        void onEditar(Blog blog);
+        void onEliminar(Blog blog);
     }
 
-    private final List<Blog> blogs;
-    private final OnBlogActionListener listener;
+    private final List<Blog> lista;
     private final String usuarioActual;
+    private final OnItemClickListener listener;
 
-    public BlogAdapter(List<Blog> blogs, String usuarioActual, OnBlogActionListener listener) {
-        this.blogs = blogs;
+    public BlogAdapter(List<Blog> lista, String usuarioActual, OnItemClickListener listener) {
+        this.lista = lista;
         this.usuarioActual = usuarioActual;
         this.listener = listener;
     }
@@ -35,51 +35,49 @@ public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder
     @NonNull
     @Override
     public BlogViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.blog_item, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.blog_item, parent, false);
         return new BlogViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(@NonNull BlogViewHolder h, int position) {
-        Blog b = blogs.get(position);
-
-        h.title.setText(b.titulo);
-        h.story.setText(b.historia);
+        Blog b = lista.get(position);
+        h.tvTitle.setText(b.titulo);
+        h.tvStory.setText(b.historia);
 
         if (b.imagenUri != null) {
-            h.image.setImageURI(Uri.parse(b.imagenUri));
+            h.img.setImageURI(Uri.parse(b.imagenUri));
         } else {
-            h.image.setImageResource(R.drawable.ic_launcher_background);
+            h.img.setImageResource(R.drawable.ic_launcher_background);
         }
 
-        // Mostrar botones solo si el post pertenece al usuario logueado
         if (b.usuario != null && b.usuario.equals(usuarioActual)) {
-            h.buttonContainer.setVisibility(View.VISIBLE);
-            h.btnEditar.setOnClickListener(v -> listener.onEdit(b));
-            h.btnEliminar.setOnClickListener(v -> listener.onDelete(b));
+            h.btnEditar.setVisibility(View.VISIBLE);
+            h.btnEliminar.setVisibility(View.VISIBLE);
         } else {
-            h.buttonContainer.setVisibility(View.GONE);
+            h.btnEditar.setVisibility(View.GONE);
+            h.btnEliminar.setVisibility(View.GONE);
         }
+
+        h.btnEditar.setOnClickListener(v -> listener.onEditar(b));
+        h.btnEliminar.setOnClickListener(v -> listener.onEliminar(b));
     }
 
     @Override
     public int getItemCount() {
-        return blogs.size();
+        return lista.size();
     }
 
-    public static class BlogViewHolder extends RecyclerView.ViewHolder {
-        TextView title, story;
-        ImageView image;
-        LinearLayout buttonContainer;
+    static class BlogViewHolder extends RecyclerView.ViewHolder {
+        TextView tvTitle, tvStory;
+        ImageView img;
         Button btnEditar, btnEliminar;
 
-        public BlogViewHolder(@NonNull View itemView) {
+        BlogViewHolder(View itemView) {
             super(itemView);
-            title = itemView.findViewById(R.id.tvItemTitle);
-            story = itemView.findViewById(R.id.tvItemStory);
-            image = itemView.findViewById(R.id.imgItem);
-            buttonContainer = itemView.findViewById(R.id.buttonContainer);
+            tvTitle = itemView.findViewById(R.id.tvItemTitle);
+            tvStory = itemView.findViewById(R.id.tvItemStory);
+            img = itemView.findViewById(R.id.imgItem);
             btnEditar = itemView.findViewById(R.id.btnEditar);
             btnEliminar = itemView.findViewById(R.id.btnEliminar);
         }
