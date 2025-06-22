@@ -49,7 +49,7 @@ public final class ThemeUtils {
     }
 
     // Obtiene la preferencia actual del modo oscuro
-    private static boolean getDarkModePreference(Context context) {
+    static boolean getDarkModePreference(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         return prefs.getBoolean(DARK_MODE_KEY, false);
     }

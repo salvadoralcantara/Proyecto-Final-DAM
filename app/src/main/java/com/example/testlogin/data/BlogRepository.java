@@ -24,7 +24,7 @@ public class BlogRepository {
         cv.put(BlogDbHelper.C_TITLE, b.titulo);
         cv.put(BlogDbHelper.C_STORY, b.historia);
         cv.put(BlogDbHelper.C_IMAGE_URI, b.imagenUri);
-        cv.put(BlogDbHelper.C_USER, b.usuario); // Guardar autor
+        cv.put(BlogDbHelper.C_USER, b.usuario); // Guardar usuario
         return db.insert(BlogDbHelper.TABLE, null, cv);
     }
 
@@ -51,6 +51,7 @@ public class BlogRepository {
         cv.put(BlogDbHelper.C_TITLE, b.titulo);
         cv.put(BlogDbHelper.C_STORY, b.historia);
         cv.put(BlogDbHelper.C_IMAGE_URI, b.imagenUri);
+        cv.put(BlogDbHelper.C_USER, b.usuario);
         db.update(BlogDbHelper.TABLE, cv, BlogDbHelper.C_ID + "=?", new String[]{String.valueOf(b.id)});
     }
 

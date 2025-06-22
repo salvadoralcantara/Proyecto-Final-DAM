@@ -11,8 +11,6 @@ import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,25 +23,16 @@ import java.util.List;
 
 public class Ingreso extends AppCompatActivity {
 
-    private BlogRepository repository;
+    private BlogRepository repo;
     private BlogAdapter adapter;
-
-    private EditText etTitle, etStory;
-    private ImageView imgPreview;
-    private ScrollView formularioLayout;
-    private RecyclerView rvBlogs;
-
-    private Blog blogAEditar = null;
-    private String uriImagen = null;
     private String usuarioActual;
+    private Blog blogEditando = null;
 
-    private final ActivityResultLauncher<String> filePickerLauncher =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null) {
-                    uriImagen = uri.toString();
-                    imgPreview.setImageURI(uri);
-                }
-            });
+    private RecyclerView rv;
+    private ScrollView formulario;
+    private EditText etTitulo, etDescripcion;
+    private ImageView imgPreview;
+    private Uri imagenUri = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,105 +40,131 @@ public class Ingreso extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ingreso);
 
-        // Obtener usuario logueado
+        // Obtener el usuario logueado
         SharedPreferences prefs = getSharedPreferences("UsuariosPrefs", MODE_PRIVATE);
-        usuarioActual = prefs.getString("usuario_logueado", "");
+        usuarioActual = prefs.getString("usuario_logueado", null);
 
-        // Inicializar componentes
-        repository = new BlogRepository(this);
-        formularioLayout = findViewById(R.id.formularioLayout);
-        rvBlogs = findViewById(R.id.rvBlogs);
-        etTitle = findViewById(R.id.etTitle);
-        etStory = findViewById(R.id.etStory);
-        imgPreview = findViewById(R.id.imgPreview);
-
-        rvBlogs.setLayoutManager(new LinearLayoutManager(this));
-        cargarDatos();
-
-        // Botón: Cerrar sesión
-        findViewById(R.id.btnCerrarSesion).setOnClickListener(v -> {
-            prefs.edit().remove("usuario_logueado").apply();
+        if (usuarioActual == null) {
+            Toast.makeText(this, "Sesión no iniciada", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, MainActivity.class));
             finish();
-        });
+            return;
+        }
 
-        // Botón: Modo oscuro
+        // Inicialización
+        repo = new BlogRepository(this);
+        rv = findViewById(R.id.rvBlogs);
+        formulario = findViewById(R.id.formularioLayout);
+        etTitulo = findViewById(R.id.etTitle);
+        etDescripcion = findViewById(R.id.etStory);
+        imgPreview = findViewById(R.id.imgPreview);
+
+        rv.setLayoutManager(new LinearLayoutManager(this));
+        cargarLista();
+
+        // Botones
+        findViewById(R.id.btnNuevoPost).setOnClickListener(v -> mostrarFormulario(null));
+        findViewById(R.id.btnCancelar).setOnClickListener(v -> ocultarFormulario());
+        findViewById(R.id.btnCerrarSesion).setOnClickListener(v -> cerrarSesion());
+
         findViewById(R.id.btnModoOscuro).setOnClickListener(v -> {
-            boolean dark = !ThemeUtils.isDarkModeEnabled(this);
+            boolean dark = !ThemeUtils.getDarkModePreference(this);
             ThemeUtils.toggleTheme(this, dark);
             recreate();
         });
 
-        // Botón: Nuevo post
-        findViewById(R.id.btnNuevoPost).setOnClickListener(v -> {
-            blogAEditar = null;
-            uriImagen = null;
-            etTitle.setText("");
-            etStory.setText("");
-            imgPreview.setImageResource(R.drawable.ic_launcher_background);
-            formularioLayout.setVisibility(View.VISIBLE);
-        });
-
-        // Botón: Seleccionar imagen
-        findViewById(R.id.btnSelectImage).setOnClickListener(v -> {
-            filePickerLauncher.launch("image/*");
-        });
-
-        // Botón: Guardar
-        findViewById(R.id.btnSave).setOnClickListener(v -> {
-            String titulo = etTitle.getText().toString().trim();
-            String historia = etStory.getText().toString().trim();
-
-            if (titulo.isEmpty() || historia.isEmpty()) {
-                Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if (blogAEditar == null) {
-                Blog nuevo = new Blog(titulo, historia, uriImagen, usuarioActual);
-                repository.insert(nuevo);
-            } else {
-                blogAEditar.titulo = titulo;
-                blogAEditar.historia = historia;
-                blogAEditar.imagenUri = uriImagen;
-                repository.update(blogAEditar);
-            }
-
-            formularioLayout.setVisibility(View.GONE);
-            cargarDatos();
-        });
-
-        // Botón: Cancelar
-        findViewById(R.id.btnCancelar).setOnClickListener(v -> {
-            formularioLayout.setVisibility(View.GONE);
-        });
+        findViewById(R.id.btnSave).setOnClickListener(v -> guardarPost());
+        findViewById(R.id.btnSelectImage).setOnClickListener(v -> seleccionarImagen());
     }
 
-    private void cargarDatos() {
-        List<Blog> blogs = repository.getAll();
+    private void cerrarSesion() {
+        SharedPreferences prefs = getSharedPreferences("UsuariosPrefs", MODE_PRIVATE);
+        prefs.edit().remove("usuario_logueado").apply();
+        startActivity(new Intent(this, MainActivity.class));
+        finish();
+    }
+
+    private void seleccionarImagen() {
+        Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+        i.setType("image/*");
+        startActivityForResult(i, 1000);
+    }
+
+    @Override
+    protected void onActivityResult(int code, int result, Intent data) {
+        super.onActivityResult(code, result, data);
+        if (code == 1000 && result == RESULT_OK && data != null) {
+            imagenUri = data.getData();
+            imgPreview.setImageURI(imagenUri);
+        }
+    }
+
+    private void guardarPost() {
+        String titulo = etTitulo.getText().toString().trim();
+        String descripcion = etDescripcion.getText().toString().trim();
+
+        if (titulo.isEmpty() || descripcion.isEmpty()) {
+            Toast.makeText(this, "Complete todos los campos", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (blogEditando == null) {
+            Blog b = new Blog(titulo, descripcion, imagenUri != null ? imagenUri.toString() : null, usuarioActual);
+            repo.insert(b);
+            Toast.makeText(this, "Post creado", Toast.LENGTH_SHORT).show();
+        } else {
+            blogEditando.titulo = titulo;
+            blogEditando.historia = descripcion;
+            blogEditando.imagenUri = (imagenUri != null) ? imagenUri.toString() : null;
+            repo.update(blogEditando);
+            Toast.makeText(this, "Post actualizado", Toast.LENGTH_SHORT).show();
+            blogEditando = null;
+        }
+
+        ocultarFormulario();
+        cargarLista();
+    }
+
+    private void cargarLista() {
+        List<Blog> blogs = repo.getAll();
         adapter = new BlogAdapter(blogs, usuarioActual, new BlogAdapter.OnItemClickListener() {
             @Override
-            public void onEditar(Blog blog) {
-                blogAEditar = blog;
-                etTitle.setText(blog.titulo);
-                etStory.setText(blog.historia);
-                uriImagen = blog.imagenUri;
-
-                if (uriImagen != null) {
-                    imgPreview.setImageURI(Uri.parse(uriImagen));
-                } else {
-                    imgPreview.setImageResource(R.drawable.ic_launcher_background);
-                }
-
-                formularioLayout.setVisibility(View.VISIBLE);
+            public void onEditar(Blog b) {
+                mostrarFormulario(b);
             }
 
             @Override
-            public void onEliminar(Blog blog) {
-                repository.delete(blog.id);
-                cargarDatos();
+            public void onEliminar(Blog b) {
+                repo.delete(b.id);
+                cargarLista();
             }
         });
-        rvBlogs.setAdapter(adapter);
+        rv.setAdapter(adapter);
+    }
+
+    private void mostrarFormulario(Blog b) {
+        formulario.setVisibility(View.VISIBLE);
+        rv.setVisibility(View.GONE);
+        if (b != null) {
+            blogEditando = b;
+            etTitulo.setText(b.titulo);
+            etDescripcion.setText(b.historia);
+            if (b.imagenUri != null) {
+                imagenUri = Uri.parse(b.imagenUri);
+                imgPreview.setImageURI(imagenUri);
+            }
+        } else {
+            blogEditando = null;
+            etTitulo.setText("");
+            etDescripcion.setText("");
+            imgPreview.setImageResource(R.drawable.ic_launcher_background);
+            imagenUri = null;
+        }
+    }
+
+    private void ocultarFormulario() {
+        formulario.setVisibility(View.GONE);
+        rv.setVisibility(View.VISIBLE);
+        blogEditando = null;
     }
 }
