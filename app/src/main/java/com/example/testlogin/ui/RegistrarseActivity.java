@@ -9,21 +9,18 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.testlogin.R;
 
-// Actividad encargada del registro de nuevos usuarios
 public class RegistrarseActivity extends AppCompatActivity {
 
-    private SharedPreferences prefs; // Para guardar los datos del usuario
+    private SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ThemeUtils.applyThemeFromPreferences(this); // Aplica el tema claro/oscuro antes de cargar la vista
+        ThemeUtils.applyThemeFromPreferences(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_registrarse); // Asocia esta actividad con su layout XML
+        setContentView(R.layout.activity_registrarse);
 
-        // Inicializa SharedPreferences donde se guardan usuarios registrados
         prefs = getSharedPreferences("UsuariosPrefs", MODE_PRIVATE);
 
-        // Asocia los elementos del layout con variables de la clase
         EditText inputUsuario = findViewById(R.id.editTextText);
         EditText inputEmail = findViewById(R.id.editTextText2);
         EditText inputPassword = findViewById(R.id.editTextText4);
@@ -31,14 +28,12 @@ public class RegistrarseActivity extends AppCompatActivity {
         Button botonGuardar = findViewById(R.id.button4);
         Button botonVolver = findViewById(R.id.buttonVolver);
 
-        // Acción al presionar el botón "Guardar" (registro)
         botonGuardar.setOnClickListener(v -> {
             String usuario = inputUsuario.getText().toString().trim();
             String email = inputEmail.getText().toString().trim();
             String password = inputPassword.getText().toString().trim();
             String confirmar = inputConfirmar.getText().toString().trim();
 
-            // Validaciones básicas para cada campo
             if (usuario.isEmpty() || email.isEmpty() || password.isEmpty() || confirmar.isEmpty()) {
                 Toast.makeText(this, "Complete todos los campos", Toast.LENGTH_SHORT).show();
                 return;
@@ -64,23 +59,20 @@ public class RegistrarseActivity extends AppCompatActivity {
                 return;
             }
 
-            // Verifica que no exista ya un usuario con el mismo nombre
             if (prefs.contains("user_" + usuario)) {
                 Toast.makeText(this, "Usuario ya registrado", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Guarda usuario y correo electrónico en SharedPreferences
             SharedPreferences.Editor editor = prefs.edit();
-            editor.putString("user_" + usuario, password);  // Contraseña
-            editor.putString("email_" + usuario, email);    // Correo
+            editor.putString("user_" + usuario, password);
+            editor.putString("email_" + usuario, email);
             editor.apply();
 
             Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show();
-            finish(); // Cierra la actividad y regresa a la anterior
+            finish();
         });
 
-        // Acción para cerrar esta pantalla sin guardar
         botonVolver.setOnClickListener(v -> finish());
     }
 }
